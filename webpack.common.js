@@ -10,14 +10,6 @@ module.exports = {
 
   devtool: 'source-map',
 
-  devServer: {
-    static: { directory: path.resolve(__dirname, 'dist') },
-    open: true,
-    hot: true,
-    compress: true,
-    historyApiFallback: true,
-  },
-
   module: {
     rules: [
       { test: /\.html$/, use: ['html-loader'] },
@@ -36,11 +28,4 @@ module.exports = {
       template: './src/template.html',
     }),
   ],
-
-  output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: '[name].[contenthash].js',
-    clean: true,
-    assetModuleFilename: '[name].[hash][ext]',
-  },
 };
