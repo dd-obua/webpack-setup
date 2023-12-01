@@ -1,7 +1,9 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
+const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 
 module.exports = {
   mode: 'development',
@@ -10,14 +12,14 @@ module.exports = {
     bundle: path.resolve(__dirname, './src/js/index.js'),
   },
 
-  devtool: 'source-map',
+  // devtool: 'source-map',
 
   devServer: {
     static: { directory: path.resolve(__dirname, 'dist') },
     open: true,
     hot: true,
     compress: true,
-    historyApiFallback: true,
+    // historyApiFallback: true,
   },
 
   module: {
@@ -46,8 +48,23 @@ module.exports = {
   ],
 
   optimization: {
-    minimize: true,
-    minimizer: [new TerserPlugin()],
+    minimizer: [
+      new OptimizeCssAssetsPlugin(),
+      new TerserPlugin(),
+      new HtmlWebpackPlugin({
+        template: './src/template.html',
+        minify: {
+          removeAttributeQuotes: true,
+          collapseWhitespace: true,
+          removeComments: true,
+        },
+      }),
+      new CssMinimizerPlugin({
+        minimizerOptions: {
+          preset: ['default', { discardComments: { removeAll: true } }],
+        },
+      }),
+    ],
   },
 
   output: {
