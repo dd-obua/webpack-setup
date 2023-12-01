@@ -1,5 +1,7 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = {
   mode: 'development',
@@ -21,7 +23,10 @@ module.exports = {
   module: {
     rules: [
       { test: /\.html$/, use: ['html-loader'] },
-      { test: /\.scss$/, use: ['style-loader', 'css-loader', 'sass-loader'] },
+      {
+        test: /\.scss$/,
+        use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader'],
+      },
       {
         test: /\.(svg|png|jpg|jpeg|gif)$/i,
         type: 'asset/resource',
@@ -35,7 +40,15 @@ module.exports = {
       filename: 'index.html',
       template: './src/template.html',
     }),
+    new MiniCssExtractPlugin({
+      filename: '[name].[contenthash].css',
+    }),
   ],
+
+  optimization: {
+    minimize: true,
+    minimizer: [new TerserPlugin()],
+  },
 
   output: {
     path: path.resolve(__dirname, 'dist'),
