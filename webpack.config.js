@@ -43,7 +43,7 @@ module.exports = {
       template: './src/template.html',
     }),
     new MiniCssExtractPlugin({
-      filename: '[name].[contenthash].css',
+      filename: '[name].[hash].css',
     }),
   ],
 
