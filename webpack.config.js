@@ -1,18 +1,22 @@
+const isProduction = process.env.NODE_ENV === 'production';
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const webpack = require('webpack');
+const { minify } = require('html-minifier-terser');
 
 module.exports = {
-  mode: 'development',
+  mode: isProduction ? 'production' : 'development',
 
   entry: {
     bundle: path.resolve(__dirname, './src/js/index.js'),
   },
 
-  // devtool: 'source-map',
+  devtool: isProduction ? false : 'source-map',
 
   devServer: {
     static: { directory: path.resolve(__dirname, 'dist') },
@@ -37,40 +41,44 @@ module.exports = {
   },
 
   plugins: [
+    new CleanWebpackPlugin({ cleanStaleWebpackAssets: isProduction }),
     new HtmlWebpackPlugin({
       title: 'Wepack App',
       filename: 'index.html',
       template: './src/template.html',
+      minify: isProduction
+        ? {
+            removeAttributeQuotes: true,
+            collapseWhitespace: true,
+            removeComments: true,
+          }
+        : false,
     }),
     new MiniCssExtractPlugin({
-      filename: '[name].[hash].css',
+      filename: isProduction ? '[name].[contenthash].css' : '[name].[hash].css',
+    }),
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
     }),
   ],
 
   optimization: {
-    minimizer: [
-      new OptimizeCssAssetsPlugin(),
-      new TerserPlugin(),
-      new HtmlWebpackPlugin({
-        template: './src/template.html',
-        minify: {
-          removeAttributeQuotes: true,
-          collapseWhitespace: true,
-          removeComments: true,
-        },
-      }),
-      new CssMinimizerPlugin({
-        minimizerOptions: {
-          preset: ['default', { discardComments: { removeAll: true } }],
-        },
-      }),
-    ],
+    minimizer: isProduction
+      ? [
+          new OptimizeCssAssetsPlugin(),
+          new TerserPlugin(),
+          new CssMinimizerPlugin({
+            minimizerOptions: {
+              preset: ['default', { discardComments: { removeAll: true } }],
+            },
+          }),
+        ]
+      : [],
   },
 
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: '[name].[contenthash].js',
-    clean: true,
-    assetModuleFilename: '[name].[hash][ext]',
+    filename: isProduction ? '[name].[contenthash].js' : '[name].js',
+    clean: isProduction,
   },
 };
